@@ -4,6 +4,11 @@
 
 FitHub is a web platform designed to optimize the gym experience for fitness enthusiasts. It combines a gym booking system with a community-driven space for social interaction, workout tracking, and AI-powered workout suggestions. FitHub helps users seamlessly reserve gym time slots, connect with like-minded individuals, and track their progress, fostering an environment of motivation and accountability.
 
+## Made by:
+
+- Brians Tjipto Meidianto
+- Kacey Isaiah Yonathan
+
 ## Features
 
 ### Core Features

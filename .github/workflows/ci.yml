@@ -1,0 +1,105 @@
+name: FitHub CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-format:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install NextJS app dependencies
+        run: cd fithub && npm ci
+
+      - name: Install API dependencies
+        run: cd fithub-api && npm ci
+
+      - name: Lint NextJS app
+        run: cd fithub && npm run lint
+
+      - name: Lint API
+        run: cd fithub-api && npm run lint
+
+  type-check:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Install NextJS app dependencies
+        run: cd fithub && npm ci
+
+      - name: TypeScript check in NextJS app
+        run: cd fithub && npm run typecheck
+
+      - name: Install API dependencies
+        run: cd fithub-api && npm ci
+
+      - name: TypeScript check in API (if applicable)
+        run: cd fithub-api && npm run typecheck
+        continue-on-error: true
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Install NextJS app dependencies
+        run: cd fithub && npm ci
+
+      - name: Run NextJS tests
+        run: cd fithub && npm test
+        continue-on-error: true
+
+      - name: Install API dependencies
+        run: cd fithub-api && npm ci
+
+      - name: Run API tests
+        run: cd fithub-api && npm test
+        continue-on-error: true
+
+  branch-protection:
+    name: Enforce Branch Protection
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Check direct push to main
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "Direct pushes to main branch are not allowed. Please create a pull request instead."
+            exit 1
+          fi
