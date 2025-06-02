@@ -32,7 +32,9 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-type SidebarContextProps = {
+export interface SidebarContextProps {
+  expanded: boolean;
+  setExpanded: (expanded: boolean) => void;
   state: "expanded" | "collapsed"
   open: boolean
   setOpen: (open: boolean) => void
@@ -122,6 +124,14 @@ function SidebarProvider({
       openMobile,
       setOpenMobile,
       toggleSidebar,
+      expanded: state === "expanded",
+      setExpanded: (expanded: boolean) => {
+        if (expanded) {
+          setOpen(true)
+        } else {
+          setOpen(false)
+        }
+      },
     }),
     [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
   )
@@ -695,6 +705,21 @@ function SidebarMenuSubButton({
       )}
       {...props}
     />
+  )
+}
+
+export function SidebarMobileToggle() {
+  const { toggleSidebar } = useSidebar()
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="md:hidden"
+      onClick={toggleSidebar}
+    >
+      <PanelLeftIcon className="h-5 w-5" />
+      <span className="sr-only">Toggle sidebar</span>
+    </Button>
   )
 }
 
