@@ -60,6 +60,7 @@ FitHub is a web platform designed to optimize the gym experience for fitness ent
    ```
 2. Install dependencies:
    ```bash
+   npm install
    cd fithub
    npm install --legacy-peer-deps
    cd ..
