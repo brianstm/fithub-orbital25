@@ -56,19 +56,17 @@ FitHub is a web platform designed to optimize the gym experience for fitness ent
 1. Clone the repository:
    ```bash
    git clone https://github.com/brianstm/fithub-orbital25.git
+   cd fithub-orbital25
    ```
 2. Install dependencies:
    ```bash
    cd fithub
+   npm install --legacy-peer-deps
+   cd ..
+   cd fithub-api
    npm install
    ```
 3. Start the development server:
    ```bash
    npm run dev
-   ```
-4. For backend (API):
-   ```bash
-   cd fithub-api
-   npm install
-   npm start
    ```
