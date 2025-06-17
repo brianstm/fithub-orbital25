@@ -1,11 +1,20 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+interface IBadge {
+  name: string;
+  description: string;
+  icon: string;
+  category: 'consistency' | 'strength' | 'milestone' | 'achievement';
+  earnedAt: Date;
+}
+
 export interface IPost extends Document {
   title: string;
   content: string;
   author: mongoose.Types.ObjectId;
   category: string;
   images: string[];
+  badges?: IBadge[];
   likes: mongoose.Types.ObjectId[];
   comments: {
     _id?: mongoose.Types.ObjectId;
@@ -19,6 +28,30 @@ export interface IPost extends Document {
   updatedAt: Date;
   isEdit?: boolean;
 }
+
+const BadgeSchema = new Schema<IBadge>({
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  icon: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    enum: ['consistency', 'strength', 'milestone', 'achievement'],
+    required: true,
+  },
+  earnedAt: {
+    type: Date,
+    required: true,
+  },
+});
 
 const PostSchema = new Schema<IPost>(
   {
@@ -47,6 +80,7 @@ const PostSchema = new Schema<IPost>(
         type: String,
       },
     ],
+    badges: [BadgeSchema],
     likes: [
       {
         type: Schema.Types.ObjectId,

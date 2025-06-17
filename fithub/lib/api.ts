@@ -237,10 +237,8 @@ export const getExerciseSuggestions = async (
   muscleGroup?: string
 ) => {
   try {
-    const params = new URLSearchParams({
-      workoutDay,
-    });
-
+    const params = new URLSearchParams();
+    params.append("workoutDay", workoutDay);
     if (muscleGroup) {
       params.append("muscleGroup", muscleGroup);
     }
@@ -250,10 +248,28 @@ export const getExerciseSuggestions = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Error getting exercise suggestions:", error);
-    return {
-      success: false,
-      message: "Failed to get exercise suggestions",
-    };
+    console.error("Error fetching exercise suggestions:", error);
+    throw error;
   }
+};
+
+// Badge API
+export const fetchUserBadges = () => {
+  return axios.get("/api/badges/my-badges");
+};
+
+export const checkUserBadges = () => {
+  return axios.post("/api/badges/check");
+};
+
+export const fetchLeaderboards = () => {
+  return axios.get("/api/badges/leaderboards");
+};
+
+export const fetchUserStats = () => {
+  return axios.get("/api/badges/my-stats");
+};
+
+export const fetchBadgeDefinitions = () => {
+  return axios.get("/api/badges/definitions");
 };

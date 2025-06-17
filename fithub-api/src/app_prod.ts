@@ -19,6 +19,7 @@ import badgeRoutes from './routes/badgeRoutes';
 // Import middleware
 import { errorHandler } from './middlewares/errorHandler.js';
 import { responseHandler } from './middlewares/responseHandler';
+import mongoose from 'mongoose';
 
 // Initialize dotenv
 dotenv.config();
@@ -153,6 +154,32 @@ const setupSwagger = async () => {
 // Initialize Swagger
 setupSwagger();
 
+const withDB = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    console.error('MongoDB URI is not defined');
+    return res.status(500).json({ error: 'Database configuration error' });
+  }
+
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 5000,
+      });
+      console.log(`MongoDB Connected: ${mongoose.connection.host}`);
+    }
+    next();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+};
+
+app.use(express.json());
+
+app.use('/api', withDB);
+
 // Basic route
 app.get('/api', (req, res) => {
   res.success({ message: 'Welcome to FitHub API' });
@@ -171,21 +198,5 @@ app.use('/api/badges', badgeRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
-
-// Connect to MongoDB and start server only if not in test environment
-const startServer = async () => {
-  if (process.env.NODE_ENV !== 'test') {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`API Documentation available at http://localhost:${PORT}/api-docs`);
-    });
-  }
-};
-
-// Only start the server if this file is run directly (not imported)
-if (require.main === module) {
-  startServer();
-}
 
 export default app;

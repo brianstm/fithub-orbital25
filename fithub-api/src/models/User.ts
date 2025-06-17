@@ -6,6 +6,29 @@ export enum UserRole {
   ADMIN = 'admin',
 }
 
+export interface IBadge {
+  name: string;
+  description: string;
+  icon: string;
+  category: 'consistency' | 'strength' | 'milestone' | 'achievement';
+  earnedAt: Date;
+  criteria?: any; // Store the criteria that was met to earn this badge
+}
+
+export interface IUserStats {
+  totalWorkouts: number;
+  totalVolumeLiftedKg: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastWorkoutDate?: Date;
+  weeklyWorkouts: number;
+  monthlyWorkouts: number;
+  averageWorkoutsPerWeek: number;
+  personalRecords: Map<string, number>; // exercise name -> max weight
+  totalWorkoutDuration: number;
+  favoriteExercises: string[];
+}
+
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -15,10 +38,85 @@ export interface IUser extends Document {
   profilePicture?: string;
   fitnessLevel?: string;
   goals?: [string];
+  badges: IBadge[];
+  stats: IUserStats;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
+
+const BadgeSchema = new Schema<IBadge>({
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  icon: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    enum: ['consistency', 'strength', 'milestone', 'achievement'],
+    required: true,
+  },
+  earnedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  criteria: {
+    type: Schema.Types.Mixed,
+  },
+});
+
+const UserStatsSchema = new Schema<IUserStats>({
+  totalWorkouts: {
+    type: Number,
+    default: 0,
+  },
+  totalVolumeLiftedKg: {
+    type: Number,
+    default: 0,
+  },
+  currentStreak: {
+    type: Number,
+    default: 0,
+  },
+  longestStreak: {
+    type: Number,
+    default: 0,
+  },
+  lastWorkoutDate: {
+    type: Date,
+  },
+  weeklyWorkouts: {
+    type: Number,
+    default: 0,
+  },
+  monthlyWorkouts: {
+    type: Number,
+    default: 0,
+  },
+  averageWorkoutsPerWeek: {
+    type: Number,
+    default: 0,
+  },
+  personalRecords: {
+    type: Map,
+    of: Number,
+    default: new Map(),
+  },
+  totalWorkoutDuration: {
+    type: Number,
+    default: 0,
+  },
+  favoriteExercises: [{
+    type: String,
+  }],
+});
 
 const UserSchema = new Schema<IUser>(
   {
@@ -62,6 +160,11 @@ const UserSchema = new Schema<IUser>(
         trim: true,
       },
     ],
+    badges: [BadgeSchema],
+    stats: {
+      type: UserStatsSchema,
+      default: () => ({}),
+    },
   },
   { timestamps: true }
 );

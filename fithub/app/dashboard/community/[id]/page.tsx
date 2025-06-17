@@ -21,6 +21,7 @@ import {
   MoreHorizontal,
   Heart,
   Users,
+  Trophy,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ import {
 import { MagicButton } from "@/components/ui/magic-button";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { ScrollProgress } from "@/components/magicui/scroll-progress";
+import { BadgeDisplay } from "@/components/badge-display";
 
 type Like = string | { _id: string; name: string };
 
@@ -305,6 +307,14 @@ export default function PostDetailPage() {
               <p className="text-muted-foreground whitespace-pre-wrap">
                 {post.content}
               </p>
+              
+              {/* Display badges if present */}
+              {post.badges && post.badges.length > 0 && (
+                <div className="mt-6">
+                  <BadgeDisplay badges={post.badges} />
+                </div>
+              )}
+              
               {post.images && post.images.length > 0 && (
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                   {post.images.map((image, index) => (

@@ -38,6 +38,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  BadgeNotification,
+  useBadgeNotifications,
+} from "@/components/badge-notification";
 
 interface WorkoutSet {
   reps: number;
@@ -104,6 +108,7 @@ export default function NewWorkoutPage() {
   // Track last save time
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [isMac, setIsMac] = useState(false);
+  const { newBadges, checkForNewBadges, clearBadges } = useBadgeNotifications();
 
   useEffect(() => {
     setIsMac(navigator.platform.toLowerCase().includes("mac"));
@@ -427,6 +432,9 @@ export default function NewWorkoutPage() {
       // Clear the cached data after successful save
       localStorage.removeItem("newWorkout");
 
+      // Check for new badges after workout creation
+      await checkForNewBadges();
+
       toast.success("Workout created successfully!");
       router.push("/dashboard/workouts");
     } catch (error) {
@@ -515,6 +523,7 @@ export default function NewWorkoutPage() {
 
   return (
     <div className="space-y-6">
+      <BadgeNotification badges={newBadges} onClose={clearBadges} />
       <BlurFade delay={0} direction="up">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-2">
