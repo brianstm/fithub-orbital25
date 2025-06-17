@@ -49,6 +49,7 @@ import {
 import { MagicButton } from "@/components/ui/magic-button";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { ScrollProgress } from "@/components/magicui/scroll-progress";
+import { CalendarIntegrationCompact } from "@/components/calendar-integration";
 
 export default function BookingsPage() {
   const router = useRouter();
@@ -133,7 +134,7 @@ export default function BookingsPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
 
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
@@ -489,7 +490,20 @@ function BookingCard({
             </div>
 
             {!isPast && !isCancelled && onCancel && (
-              <div className="flex justify-end">
+              <div className="flex justify-between items-center">
+                <CalendarIntegrationCompact 
+                  booking={{
+                    _id: booking._id,
+                    date: booking.date,
+                    startTime: booking.startTime,
+                    endTime: booking.endTime,
+                    gym: {
+                      _id: booking.gym?._id || '',
+                      name: booking.gym?.name || '',
+                      address: booking.gym?.address || '',
+                    },
+                  }}
+                />
                 <Button
                   variant="outline"
                   size="sm"
@@ -499,6 +513,25 @@ function BookingCard({
                   <X className="h-4 w-4 mr-1.5" />
                   Cancel
                 </Button>
+              </div>
+            )}
+
+            {(isPast || isCancelled) && (
+              <div className="flex justify-start">
+                <CalendarIntegrationCompact 
+                  booking={{
+                    _id: booking._id,
+                    date: booking.date,
+                    startTime: booking.startTime,
+                    endTime: booking.endTime,
+                    gym: {
+                      _id: booking.gym?._id || '',
+                      name: booking.gym?.name || '',
+                      address: booking.gym?.address || '',
+                    },
+                  }}
+                  className="opacity-60"
+                />
               </div>
             )}
           </div>

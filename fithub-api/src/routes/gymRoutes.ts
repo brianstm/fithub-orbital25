@@ -6,6 +6,8 @@ import {
   createGym,
   updateGym,
   deleteGym,
+  getGymPeakHours,
+  getGymAvailability,
 } from "../controllers/gymController";
 import { protect, admin } from "../middlewares/auth";
 import { validate } from "../middlewares/validation";
@@ -242,5 +244,137 @@ router.put("/:id", protect, admin, updateGym);
  *         description: Not authorized
  */
 router.delete("/:id", protect, admin, deleteGym);
+
+/**
+ * @swagger
+ * /api/gyms/{id}/peak-hours:
+ *   get:
+ *     summary: Get gym peak hours analysis
+ *     tags: [Gyms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Gym ID
+ *     responses:
+ *       200:
+ *         description: Peak hours analysis data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     gym:
+ *                       type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         capacity:
+ *                           type: integer
+ *                     peakHours:
+ *                       type: object
+ *                       description: Peak and off-peak hours by day of week
+ *                     hourlyData:
+ *                       type: object
+ *                       description: Raw hourly booking data
+ *                     overallHourlyBusyness:
+ *                       type: object
+ *                       description: Average busyness by hour
+ *                     recommendations:
+ *                       type: array
+ *                       description: Personalized recommendations
+ *       404:
+ *         description: Gym not found
+ *       401:
+ *         description: Not authenticated
+ */
+router.get("/:id/peak-hours", protect, getGymPeakHours);
+
+/**
+ * @swagger
+ * /api/gyms/{id}/availability:
+ *   get:
+ *     summary: Get gym availability for a specific date
+ *     tags: [Gyms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Gym ID
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Date in YYYY-MM-DD format
+ *     responses:
+ *       200:
+ *         description: Gym availability data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     gym:
+ *                       type: object
+ *                     date:
+ *                       type: string
+ *                     dayOfWeek:
+ *                       type: string
+ *                     hourlyAvailability:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           hour:
+ *                             type: integer
+ *                           timeSlot:
+ *                             type: string
+ *                           availableSlots:
+ *                             type: integer
+ *                           occupancy:
+ *                             type: integer
+ *                           occupancyRate:
+ *                             type: integer
+ *                           busyLevel:
+ *                             type: string
+ *                             enum: [low, medium, high]
+ *                           isPeakHour:
+ *                             type: boolean
+ *                           isOffPeakHour:
+ *                             type: boolean
+ *                           recommended:
+ *                             type: boolean
+ *                     summary:
+ *                       type: object
+ *       400:
+ *         description: Missing date parameter
+ *       404:
+ *         description: Gym not found
+ *       401:
+ *         description: Not authenticated
+ */
+router.get("/:id/availability", protect, getGymAvailability);
 
 export default router;

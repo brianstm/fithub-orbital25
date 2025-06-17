@@ -13,7 +13,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Users, Search, Filter, Calendar, Sparkles } from "lucide-react";
+import {
+  MapPin,
+  Clock,
+  Users,
+  Search,
+  Filter,
+  Calendar,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import { fetchGyms } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Gym } from "@/types";
@@ -24,11 +33,18 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { MagicCard, MagicCardContent, MagicCardHeader } from "@/components/ui/magic-card";
+import {
+  MagicCard,
+  MagicCardContent,
+  MagicCardHeader,
+} from "@/components/ui/magic-card";
 import { MagicButton } from "@/components/ui/magic-button";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { ScrollProgress } from "@/components/magicui/scroll-progress";
 import type { Metadata } from "next";
+import { PeakHoursDisplay } from "@/components/peak-hours-display";
+import { CalendarIntegrationCompact } from "@/components/calendar-integration";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GymsPage() {
   const router = useRouter();
@@ -73,7 +89,6 @@ export default function GymsPage() {
 
   return (
     <div className="space-y-6">
-      
       <BlurFade delay={0} direction="up">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -87,12 +102,6 @@ export default function GymsPage() {
             <p className="text-muted-foreground mt-1">
               Find and book your favorite gym facilities
             </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="group hover:border-primary/60 hover:bg-primary/5">
-              <Filter className="mr-2 h-4 w-4 group-hover:text-primary" />
-              Filters
-            </Button>
           </div>
         </div>
       </BlurFade>
@@ -112,127 +121,176 @@ export default function GymsPage() {
         </div>
       </BlurFade>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array(6)
-            .fill(0)
-            .map((_, index) => (
-              <Card key={index} className="overflow-hidden">
-                <Skeleton className="h-48 w-full" />
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-3/4" />
-                </CardContent>
-                <CardFooter>
-                  <Skeleton className="h-10 w-full" />
-                </CardFooter>
-              </Card>
-            ))}
-        </div>
-      ) : filteredGyms.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGyms.map((gym, index) => (
-            <BlurFade key={gym._id} delay={0.1 + index * 0.05} direction="up">
-              <GymCard
-                gym={gym}
-                onClick={() => handleGymClick(gym._id)}
-              />
-            </BlurFade>
-          ))}
-        </div>
-      ) : (
-        <BlurFade delay={0.1} direction="up">
-          <div className="text-center py-12">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <MagicCard key={i} className="p-6">
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-full"></div>
+                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </MagicCard>
+          ))
+        ) : filteredGyms.length === 0 ? (
+          <div className="col-span-full text-center py-12">
             <p className="text-muted-foreground">
-              No gyms found matching your search criteria.
+              No gyms found matching your search.
             </p>
           </div>
-        </BlurFade>
-      )}
-    </div>
-  );
-}
-
-interface GymCardProps {
-  gym: Gym;
-  onClick: () => void;
-}
-
-function GymCard({ gym, onClick }: GymCardProps) {
-  return (
-    <MagicCard
-      className="overflow-hidden cursor-pointer"
-      onClick={onClick}
-      hoverEffect="border"
-    >
-      <div className="h-48 bg-primary/5 relative">
-        {gym.images && gym.images.length > 0 ? (
-          <div className="relative">
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-            >
-              <CarouselContent>
-                {gym.images.map((image, index) => (
-                  <CarouselItem key={index}>
-                    <img
-                      src={image || "/placeholder.svg"}
-                      alt={`${gym.name} - Image ${index + 1}`}
-                      className="w-full h-48 object-cover"
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="absolute left-1 top-1/2 -translate-y-1/2 size-6" />
-              <CarouselNext className="absolute right-1 top-1/2 -translate-y-1/2 size-6" />
-            </Carousel>
-          </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-muted-foreground">No image available</span>
-          </div>
+          filteredGyms.map((gym) => (
+            <MagicCard
+              key={gym._id}
+              className="p-6 hover:shadow-lg transition-shadow"
+            >
+              <div className="space-y-4">
+                {/* Image Carousel */}
+                {gym.images && gym.images.length > 0 && (
+                  <div className="h-48 w-full rounded-lg overflow-hidden relative">
+                    <Carousel
+                      opts={{
+                        align: "center",
+                        loop: true,
+                      }}
+                      className="h-full"
+                    >
+                      <CarouselContent className="h-full">
+                        {gym.images.map((image, index) => (
+                          <CarouselItem key={index} className="h-full">
+                            <div className="h-full w-full relative overflow-hidden rounded-lg">
+                              <img
+                                src={image || "/placeholder.svg"}
+                                alt={`${gym.name} - Image ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                            </div>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white" />
+                      <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white" />
+                    </Carousel>
+                  </div>
+                )}
+
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg">{gym.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {gym.address}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">
+                      Capacity: {gym.capacity}
+                    </p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {gym.openingHours?.weekday?.open} -{" "}
+                      {gym.openingHours?.weekday?.close}
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {gym.description}
+                </p>
+
+                {gym.amenities && gym.amenities.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {gym.amenities.slice(0, 3).map((amenity, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full"
+                      >
+                        {amenity}
+                      </span>
+                    ))}
+                    {gym.amenities.length > 3 && (
+                      <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-full">
+                        +{gym.amenities.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="peak-hours">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      Peak Hours
+                    </TabsTrigger>
+                    <TabsTrigger value="book">Book</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="overview" className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <p className="font-medium">Weekdays</p>
+                        <p className="text-muted-foreground">
+                          {gym.openingHours?.weekday?.open} -{" "}
+                          {gym.openingHours?.weekday?.close}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-medium">Weekends</p>
+                        <p className="text-muted-foreground">
+                          {gym.openingHours?.weekend?.open} -{" "}
+                          {gym.openingHours?.weekend?.close}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={() =>
+                        (window.location.href = `/dashboard/gyms/${gym._id}`)
+                      }
+                    >
+                      View Details & Book
+                    </Button>
+                  </TabsContent>
+
+                  <TabsContent value="peak-hours">
+                    <div className="h-64 overflow-y-auto">
+                      <PeakHoursDisplay gymId={gym._id} gymName={gym.name} />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="book" className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Quick booking options and calendar integration
+                    </p>
+                    <div className="space-y-2">
+                      <Button
+                        className="w-full"
+                        onClick={() =>
+                          (window.location.href = `/dashboard/gyms/${gym._id}/book`)
+                        }
+                      >
+                        Book Now
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() =>
+                          (window.location.href = `/dashboard/gyms/${gym._id}#availability`)
+                        }
+                      >
+                        Check Availability
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </MagicCard>
+          ))
         )}
       </div>
-      <MagicCardHeader>
-        <CardTitle className="group-hover:text-primary transition-colors">{gym.name}</CardTitle>
-        <CardDescription className="flex items-center">
-          <MapPin className="h-3.5 w-3.5 mr-1" />
-          {gym.address}
-        </CardDescription>
-      </MagicCardHeader>
-      <MagicCardContent>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {gym.amenities &&
-            gym.amenities.map((amenity, index) => (
-              <Badge key={index} variant="secondary" className="bg-primary/10 hover:bg-primary/20 text-primary border-none transition-colors">
-                {amenity}
-              </Badge>
-            ))}
-        </div>
-        <div className="flex items-center text-sm text-muted-foreground mb-2">
-          <Clock className="h-3.5 w-3.5 mr-1 text-primary/70" />
-          <span>
-            Open: {gym.openingHours?.weekday?.open} -{" "}
-            {gym.openingHours?.weekday?.close}
-          </span>
-        </div>
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Users className="h-3.5 w-3.5 mr-1 text-primary/70" />
-          <span>Capacity: {gym.capacity} people</span>
-        </div>
-        <div className="mt-4">
-          <MagicButton className="w-full" hoverScale glowColor="rgba(var(--primary-rgb), 0.5)">
-            <Calendar className="mr-2 h-4 w-4" />
-            Book Now
-          </MagicButton>
-        </div>
-      </MagicCardContent>
-    </MagicCard>
+    </div>
   );
 }
