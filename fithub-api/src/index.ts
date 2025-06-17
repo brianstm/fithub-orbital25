@@ -3,7 +3,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { rateLimit } from 'express-rate-limit';
-import connectDB from './config/database';
 
 // Import routes
 import authRoutes from './routes/authRoutes';
@@ -17,7 +16,7 @@ import aiRoutes from './routes/aiRoutes';
 import badgeRoutes from './routes/badgeRoutes';
 
 // Import middleware
-import { errorHandler } from './middlewares/errorHandler.js';
+import { errorHandler } from './middlewares/errorHandler';
 import { responseHandler } from './middlewares/responseHandler';
 import mongoose from 'mongoose';
 
@@ -26,10 +25,13 @@ dotenv.config();
 
 // Initialize Express
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8000;
 
 // Middleware
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 
 const corsOptions = {
   origin: [
@@ -37,27 +39,131 @@ const corsOptions = {
     'http://localhost:8000',
     'http://localhost:5173',
     'http://localhost:3001',
+    'https://fithub-orbital.vercel.app',
+    'https://fithub-api.vercel.app',
+    /\.vercel\.app$/,
+    /\.netlify\.app$/,
   ],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
 
 app.use(cors(corsOptions));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Apply response standardization middleware
 app.use(responseHandler);
 
-// Rate limiting
+// Rate limiting - more lenient for production
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100000,
+  max: 1000, // Reduced from 100000 for better performance
   standardHeaders: true,
   legacyHeaders: false,
+  skip: req => {
+    // Skip rate limiting for health checks
+    return req.path === '/api' || req.path === '/api/health';
+  },
 });
 app.use(limiter);
+
+// Database connection with better error handling
+const connectDB = async () => {
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    console.error('MongoDB URI is not defined');
+    throw new Error('Database configuration error');
+  }
+
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+        bufferCommands: false,
+      });
+      console.log(`MongoDB Connected: ${mongoose.connection.host}`);
+    }
+  } catch (error) {
+    console.error('Database connection error:', error);
+    throw error;
+  }
+};
+
+// Middleware to ensure DB connection
+const withDB = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: process.env.NODE_ENV === 'development' ? error : 'Internal server error',
+    });
+  }
+};
+
+// Apply DB middleware to all API routes
+app.use('/api', withDB);
+
+// Health check route
+app.get('/api', (req, res) => {
+  res.success({
+    message: 'Welcome to FitHub API',
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+  });
+});
+
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/gyms', gymRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/workouts', workoutRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/badges', badgeRoutes);
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+    availableRoutes: [
+      '/api',
+      '/api/health',
+      '/api/auth',
+      '/api/gyms',
+      '/api/bookings',
+      '/api/workouts',
+      '/api/posts',
+      '/api/ai',
+      '/api/upload',
+      '/api/users',
+      '/api/badges',
+    ],
+  });
+});
 
 // Set up Swagger documentation
 const setupSwagger = async () => {
@@ -154,49 +260,8 @@ const setupSwagger = async () => {
 // Initialize Swagger
 setupSwagger();
 
-const withDB = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const uri = process.env.MONGODB_URI;
-
-  if (!uri) {
-    console.error('MongoDB URI is not defined');
-    return res.status(500).json({ error: 'Database configuration error' });
-  }
-
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 5000,
-      });
-      console.log(`MongoDB Connected: ${mongoose.connection.host}`);
-    }
-    next();
-  } catch (error) {
-    console.error('Database connection error:', error);
-    res.status(500).json({ error: 'Database connection failed' });
-  }
-};
-
-app.use(express.json());
-
-app.use('/api', withDB);
-
-// Basic route
-app.get('/api', (req, res) => {
-  res.success({ message: 'Welcome to FitHub API' });
-});
-
-// API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/gyms', gymRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/workouts', workoutRoutes);
-app.use('/api/posts', postRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/badges', badgeRoutes);
-
 // Error handling middleware
 app.use(errorHandler);
 
+// For Vercel, we need to export the app as default
 export default app;

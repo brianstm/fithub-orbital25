@@ -273,3 +273,88 @@ export const fetchUserStats = () => {
 export const fetchBadgeDefinitions = () => {
   return axios.get("/api/badges/definitions");
 };
+
+// Gym Peak Hours and Availability API functions
+export const fetchGymPeakHours = async (gymId: string) => {
+  return await axios.get(`/api/gyms/${gymId}/peak-hours`);
+};
+
+export const fetchGymAvailability = async (gymId: string, date: string) => {
+  return await axios.get(`/api/gyms/${gymId}/availability?date=${date}`);
+};
+
+// Calendar Integration Functions
+export const generateCalendarEvent = (booking: any) => {
+  // Parse the date string properly
+  const bookingDate = new Date(booking.date);
+
+  // Create proper DateTime objects by combining date and time
+  const [startHour, startMinute] = booking.startTime.split(":").map(Number);
+  const [endHour, endMinute] = booking.endTime.split(":").map(Number);
+
+  const startDateTime = new Date(bookingDate);
+  startDateTime.setHours(startHour, startMinute, 0, 0);
+
+  const endDateTime = new Date(bookingDate);
+  endDateTime.setHours(endHour, endMinute, 0, 0);
+
+  const event = {
+    title: `Gym Session - ${booking.gym.name}`,
+    description: `Workout session at ${booking.gym.name}\nAddress: ${booking.gym.address}`,
+    location: booking.gym.address,
+    startTime: startDateTime,
+    endTime: endDateTime,
+    reminder: 30, // 30 minutes before
+  };
+
+  return event;
+};
+
+export const generateGoogleCalendarUrl = (booking: any) => {
+  const event = generateCalendarEvent(booking);
+  const startTime =
+    event.startTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const endTime =
+    event.endTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: event.title,
+    dates: `${startTime}/${endTime}`,
+    details: event.description,
+    location: event.location,
+    trp: "false",
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
+
+export const generateAppleCalendarUrl = (booking: any) => {
+  const event = generateCalendarEvent(booking);
+  const startTime =
+    event.startTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const endTime =
+    event.endTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//FitHub//FitHub Booking//EN",
+    "BEGIN:VEVENT",
+    `DTSTART:${startTime}`,
+    `DTEND:${endTime}`,
+    `SUMMARY:${event.title}`,
+    `DESCRIPTION:${event.description}`,
+    `LOCATION:${event.location}`,
+    "BEGIN:VALARM",
+    "TRIGGER:-PT30M",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:Gym session reminder",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  const blob = new Blob([icsContent], { type: "text/calendar" });
+  return URL.createObjectURL(blob);
+};

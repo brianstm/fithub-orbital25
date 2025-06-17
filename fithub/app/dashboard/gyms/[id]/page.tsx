@@ -47,6 +47,8 @@ import {
 import { MagicButton } from "@/components/ui/magic-button";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { ScrollProgress } from "@/components/magicui/scroll-progress";
+import { PeakHoursDisplay } from "@/components/peak-hours-display";
+import { CalendarIntegration } from "@/components/calendar-integration";
 
 export default function GymDetailsPage() {
   const params = useParams();
@@ -56,6 +58,8 @@ export default function GymDetailsPage() {
   const [date, setDate] = useState<Date>(new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
+  const [lastBooking, setLastBooking] = useState<any>(null);
+  const [showCalendarIntegration, setShowCalendarIntegration] = useState(false);
 
   useEffect(() => {
     const loadGym = async () => {
@@ -85,21 +89,37 @@ export default function GymDetailsPage() {
     setIsBooking(true);
     try {
       const [startTime, endTime] = selectedTimeSlot.split(" - ");
-      await createBooking({
+      const bookingData = {
         gym: params.id as string,
         date: format(date, "yyyy-MM-dd"),
         startTime,
         endTime,
-      });
+      };
+
+      const response = await createBooking(bookingData);
+
+      // Create booking object for calendar integration
+      const booking = {
+        _id: response.data.data._id || "temp-id",
+        date: bookingData.date,
+        startTime: bookingData.startTime,
+        endTime: bookingData.endTime,
+        gym: {
+          _id: gym._id,
+          name: gym.name,
+          address: gym.address,
+        },
+      };
+
+      setLastBooking(booking);
+      setShowCalendarIntegration(true);
 
       toast.success(
         `You've booked ${gym.name} on ${format(
           date,
           "MMMM d, yyyy"
-        )} at ${startTime}.`
+        )} at ${startTime}. Add it to your calendar in the bookings tab!`
       );
-
-      router.push("/dashboard/bookings");
     } catch (error: any) {
       console.error("Error creating booking:", error);
       toast.error(
@@ -320,11 +340,17 @@ export default function GymDetailsPage() {
                   >
                     About
                   </TabsTrigger>
-                  <TabsTrigger
+                  {/* <TabsTrigger
                     value="facilities"
                     className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
                   >
                     Facilities
+                  </TabsTrigger> */}
+                  <TabsTrigger
+                    value="peak-hours"
+                    className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                  >
+                    Peak Hours
                   </TabsTrigger>
                 </TabsList>
 
@@ -358,6 +384,10 @@ export default function GymDetailsPage() {
                       </p>
                     )}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="peak-hours">
+                  <PeakHoursDisplay gymId={gym._id} gymName={gym.name} />
                 </TabsContent>
               </Tabs>
             </MagicCardContent>
@@ -421,6 +451,32 @@ export default function GymDetailsPage() {
                   </>
                 )}
               </MagicButton>
+
+              {showCalendarIntegration && lastBooking && (
+                <div className="mt-6 space-y-4">
+                  <Separator />
+                  <CalendarIntegration booking={lastBooking} />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => router.push("/dashboard/bookings")}
+                      className="flex-1"
+                    >
+                      View My Bookings
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setShowCalendarIntegration(false);
+                        setLastBooking(null);
+                        setSelectedTimeSlot(null);
+                      }}
+                      className="flex-1"
+                    >
+                      Book Another
+                    </Button>
+                  </div>
+                </div>
+              )}
             </MagicCardContent>
           </MagicCard>
         </BlurFade>
