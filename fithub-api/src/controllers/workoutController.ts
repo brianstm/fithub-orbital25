@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Workout, { SetType } from '../models/Workout';
+import { BadgeService } from '../services/badgeService';
 
 // Get all workouts (for admins) or user's workouts (for regular users)
 export const getWorkouts = async (req: Request, res: Response) => {
@@ -108,6 +109,17 @@ export const createWorkout = async (req: Request, res: Response) => {
 
     // Create workout
     const workout = await Workout.create(req.body);
+
+    // Check for new badges after workout creation
+    try {
+      const newBadges = await BadgeService.checkAndAwardBadges(req.user._id);
+      if (newBadges.length > 0) {
+        console.log(`User ${req.user._id} earned ${newBadges.length} new badges!`);
+      }
+    } catch (badgeError) {
+      console.error('Error checking badges after workout creation:', badgeError);
+      // Don't fail the workout creation if badge checking fails
+    }
 
     res.success(workout, 201);
   } catch (error) {

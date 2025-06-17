@@ -18,6 +18,7 @@ import {
   Sparkles,
   Users,
   Heart,
+  Trophy,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ import {
 import { MagicButton } from "@/components/ui/magic-button";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { ScrollProgress } from "@/components/magicui/scroll-progress";
+import { BadgeDisplay } from "@/components/badge-display";
 
 interface UpdatedPost extends Post {
   isLiked?: boolean;
@@ -176,6 +178,14 @@ export default function CommunityPage() {
                     : "Unknown date"}
                 </p>
               </div>
+              {post.badges && post.badges.length > 0 && (
+                <div className="ml-auto">
+                  <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-1 rounded-full">
+                    <Trophy className="h-3 w-3" />
+                    <span>{post.badges.length} badge{post.badges.length > 1 ? 's' : ''}</span>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex gap-4">
               <div className="flex-1">
@@ -185,6 +195,14 @@ export default function CommunityPage() {
                 <p className="text-muted-foreground mb-4 line-clamp-3">
                   {post.content}
                 </p>
+                
+                {/* Display badges if present */}
+                {post.badges && post.badges.length > 0 && (
+                  <div className="mb-4">
+                    <BadgeDisplay badges={post.badges} compact />
+                  </div>
+                )}
+                
                 {post.category && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     <Badge
@@ -249,7 +267,7 @@ export default function CommunityPage() {
               Community Feed
             </h1>
             <p className="text-muted-foreground mt-1">
-              Connect with other fitness enthusiasts
+              Connect with other fitness enthusiasts and share your achievements
             </p>
           </div>
           <MagicButton

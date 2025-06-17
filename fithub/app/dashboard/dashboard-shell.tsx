@@ -17,6 +17,7 @@ import {
   User,
   Settings,
   LogOut,
+  Award,
 } from "lucide-react";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { ScrollProgress } from "@/components/magicui/scroll-progress";
