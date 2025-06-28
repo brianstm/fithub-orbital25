@@ -11,19 +11,14 @@ FitHub is a web platform designed to optimize the gym experience for fitness ent
 
 ## Features
 
-### Core Features
-
 - **User Authentication & Profiles**: Secure login/signup with JWT and customizable user profiles.
 - **Community Forum**: Post, comment, upvote/downvote, and categorize fitness topics.
 - **Gym Booking System**: Reserve gym slots, view availability, and manage bookings via integrated calendar.
 - **Workout Tracking & AI Suggestions**: Log workouts, track progress, and get personalized AI workout suggestions.
-
-### Extended Features
-
 - **Sharing & Social Features**: Share workouts, milestones, and add friends to track progress.
 - **Achievements & Gamification**: Earn badges, track streaks, and compete on leaderboards.
 - **Gym Usage Heatmap**: View peak/off-peak gym usage times to plan workouts efficiently.
-- **Calendar Sync for Bookings**: Sync gym bookings with Google/Apple/Outlook Calendars.
+- **Calendar Sync for Bookings**: Sync gym bookings with Google/Apple Calendars.
 - **AI-Generated Workout Variations**: Receive alternative exercises to avoid plateaus.
 
 ## Tech Stack
@@ -32,7 +27,6 @@ FitHub is a web platform designed to optimize the gym experience for fitness ent
 - **Backend**: Express.js, MongoDB (via MongoDB Atlas)
 - **Authentication**: JWT
 - **AI Services**: Gemini API for workout suggestions
-- **Deployment**: Vercel (frontend), Render (backend)
 - **CI/CD**: GitHub Actions for automated testing and deployment
 
 ## Security & Authentication
@@ -49,7 +43,6 @@ FitHub is a web platform designed to optimize the gym experience for fitness ent
 ## API Documentation
 
 - Swagger for API documentation
-- Postman Collection for manual API testing
 
 ## Installation
 
