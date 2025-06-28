@@ -252,15 +252,16 @@ export default function BadgesPage() {
   return (
     <div className="space-y-6">
       <BlurFade delay={0} direction="up">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="bg-primary/10 p-2 rounded-lg">
-            <Award className="h-6 w-6 text-primary" />
-          </div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary mb-2">
+              <Award className="h-3.5 w-3.5 mr-1.5" />
+              <span className="text-sm font-medium">Leaderboard</span>
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400">
               Badges & Achievements
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mt-1">
               Track your fitness journey and compete with the community
             </p>
           </div>
