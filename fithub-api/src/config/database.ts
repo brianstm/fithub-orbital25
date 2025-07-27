@@ -9,12 +9,9 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
-    // Don't exit the process when in test environment
-    if (process.env.NODE_ENV !== 'test') {
-      process.exit(1);
-    }
+    // Don't exit the process - let the calling code handle the error
     throw error;
   }
 };
 
-export default connectDB; 
+export default connectDB;
