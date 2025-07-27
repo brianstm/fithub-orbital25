@@ -1,7 +1,7 @@
 {
   "name": "fithub-api",
   "version": "1.0.0",
-  "type": "commonjs",
+  "type": "module",
   "description": "API for Fithub",
   "main": "src/app.ts",
   "scripts": {

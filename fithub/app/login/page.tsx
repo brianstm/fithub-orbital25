@@ -133,14 +133,6 @@ export default function LoginPage() {
                     </FormItem>
                   )}
                 />
-                <div className="flex items-center justify-between">
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm text-primary hover:text-primary/80 hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
                 <MagicButton
                   type="submit"
                   className="w-full"
