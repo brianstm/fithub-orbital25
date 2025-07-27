@@ -30,7 +30,13 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8000;
 app.use(helmet());
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:8000'],
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'https://fithub-orbital25-seven.vercel.app',
+    'https://fithub-orbital25-nus.vercel.app',
+    'https://fithub-api.onrender.com',
+  ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
 };
@@ -169,7 +175,7 @@ const startServer = async () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`API Documentation available at http://localhost:${PORT}/api-docs`);
     });
-    
+
     // Handle server shutdown gracefully
     process.on('SIGTERM', () => {
       console.log('SIGTERM received, shutting down gracefully');
