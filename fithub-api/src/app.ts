@@ -17,7 +17,7 @@ import aiRoutes from './routes/aiRoutes';
 import badgeRoutes from './routes/badgeRoutes';
 
 // Import middleware
-import { errorHandler } from './middlewares/errorHandler.js';
+import { errorHandler } from './middlewares/errorHandler';
 import { responseHandler } from './middlewares/responseHandler';
 
 // Initialize dotenv
@@ -176,16 +176,22 @@ app.use(errorHandler);
 const startServer = async () => {
   if (process.env.NODE_ENV !== 'test') {
     await connectDB();
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`API Documentation available at http://localhost:${PORT}/api-docs`);
+    });
+    
+    // Handle server shutdown gracefully
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, shutting down gracefully');
+      server.close(() => {
+        console.log('Process terminated');
+      });
     });
   }
 };
 
-// Only start the server if this file is run directly (not imported)
-if (require.main === module) {
-  startServer();
-}
+// Start the server
+startServer().catch(console.error);
 
 export default app;

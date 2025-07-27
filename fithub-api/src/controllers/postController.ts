@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import Post, { IPost } from '../models/Post.js';
+import Post, { IPost } from '../models/Post';
 import mongoose from 'mongoose';
 
 // Get all posts with pagination
