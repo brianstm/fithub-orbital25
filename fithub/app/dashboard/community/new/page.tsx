@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +35,8 @@ import {
 import { createPost, uploadImage } from "@/lib/api";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Upload, X } from "lucide-react";
+import { BadgeSelector } from "@/components/badge-selector";
+import { BadgeData } from "@/types";
 
 // Define the schema for the post form
 const postSchema = z.object({
@@ -51,6 +53,7 @@ export default function NewPostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [postImages, setPostImages] = useState<string[]>([]);
+  const [selectedBadges, setSelectedBadges] = useState<BadgeData[]>([]);
 
   // Initialize the form
   const form = useForm<z.infer<typeof postSchema>>({
@@ -61,6 +64,28 @@ export default function NewPostPage() {
       category: "",
     },
   });
+
+  // Handle pre-selected badges from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const badgesParam = urlParams.get('badges');
+    
+    if (badgesParam) {
+      try {
+        const preSelectedBadges = JSON.parse(decodeURIComponent(badgesParam));
+        setSelectedBadges(preSelectedBadges);
+        
+        // Auto-fill some form fields for badge posts
+        if (preSelectedBadges.length > 0) {
+          form.setValue('category', 'Achievement');
+          form.setValue('title', `Check out my new ${preSelectedBadges[0].name} badge!`);
+          form.setValue('content', `Just earned the "${preSelectedBadges[0].name}" badge! ${preSelectedBadges[0].description}`);
+        }
+      } catch (error) {
+        console.error('Error parsing badges parameter:', error);
+      }
+    }
+  }, [form]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -99,7 +124,8 @@ export default function NewPostPage() {
     try {
       await createPost({
         ...data,
-        images: postImages
+        images: postImages,
+        badges: selectedBadges.length > 0 ? selectedBadges : undefined
       });
       toast("Your post has been published successfully.");
       router.push("/dashboard/community");
@@ -177,6 +203,7 @@ export default function NewPostPage() {
                         <SelectItem value="Motivation">Motivation</SelectItem>
                         <SelectItem value="Progress">Progress</SelectItem>
                         <SelectItem value="Question">Question</SelectItem>
+                        <SelectItem value="Achievement">Achievement</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormDescription>
@@ -259,6 +286,15 @@ export default function NewPostPage() {
                 </div>
               </div>
             </CardContent>
+          </Card>
+
+          {/* Badge Selector Card */}
+          <BadgeSelector
+            selectedBadges={selectedBadges}
+            onBadgeSelect={setSelectedBadges}
+          />
+
+          <Card>
             <CardFooter className="flex justify-between">
               <Button
                 type="button"

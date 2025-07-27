@@ -70,6 +70,14 @@ export interface Workout {
   updatedAt?: string | Date;
 }
 
+export interface BadgeData {
+  name: string;
+  description: string;
+  icon: string;
+  category: "consistency" | "strength" | "milestone" | "achievement";
+  earnedAt: string;
+}
+
 export interface Post {
   _id: string;
   title: string;
@@ -92,6 +100,7 @@ export interface Post {
     profilePicture?: string;
   };
   images?: string[];
+  badges?: BadgeData[];
   isEdit: boolean;
 }
 

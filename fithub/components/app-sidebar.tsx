@@ -32,6 +32,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
+  Award,
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useAuth } from "@/context/auth-context";
@@ -205,6 +206,22 @@ export function AppSidebar({ inSheet = false }: { inSheet?: boolean }) {
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         asChild
+                        isActive={pathname.startsWith("/dashboard/badges")}
+                        tooltip="Badges"
+                        className="hover:bg-primary/10 data-[active=true]:bg-primary/15 transition-all"
+                      >
+                        <Link href="/dashboard/badges">
+                          <Award className="h-5 w-5" />
+                          <span>Badges</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </BlurFade>
+
+                  <BlurFade delay={0.35} direction="right">
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
                         isActive={pathname.startsWith("/dashboard/ai")}
                         tooltip="AI Trainer"
                         className="hover:bg-primary/10 data-[active=true]:bg-primary/15 transition-all"
@@ -346,7 +363,7 @@ export function AppSidebar({ inSheet = false }: { inSheet?: boolean }) {
               </SidebarMenuItem>
             </BlurFade>
 
-            <BlurFade delay={0.25} direction="right">
+            {/* <BlurFade delay={0.25} direction="right">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
@@ -376,7 +393,7 @@ export function AppSidebar({ inSheet = false }: { inSheet?: boolean }) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            </BlurFade>
+            </BlurFade> */}
 
             <BlurFade delay={0.35} direction="right">
               <SidebarMenuItem>

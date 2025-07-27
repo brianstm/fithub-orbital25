@@ -103,30 +103,9 @@ export default function Home() {
 
             <BlurFade direction="up" delay={0.1} startOnView inView>
               <div className="flex flex-col">
-                <HyperText
-                  startOnView
-                  delay={300}
-                  className="text-4xl md:text-6xl font-bold tracking-tight leading-none"
-                  duration={1000}
-                >
-                  YOUR ULTIMATE
-                </HyperText>
-                <HyperText
-                  startOnView
-                  delay={600}
-                  className="text-4xl md:text-6xl font-bold tracking-tight leading-none"
-                  duration={1000}
-                >
-                  FITNESS
-                </HyperText>
-                <HyperText
-                  startOnView
-                  delay={900}
-                  className="text-4xl md:text-6xl font-bold tracking-tight leading-none"
-                  duration={1000}
-                >
-                  COMPANION
-                </HyperText>
+                <h2 className="text-5xl md:text-7xl mt-2 bg-clip-text text-white font-bold">
+                  Your Ultimate Fitness Companion
+                </h2>
               </div>
               <h2 className="text-2xl md:text-3xl mt-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400">
                 Powered by AI technology
